@@ -1,0 +1,29 @@
+Calculator Application via Command Line
+
+Project Structure:
+	- main.go
+	- math
+		- math.go
+
+math/math.go
+	- Expose Calculator interface
+	- in this package contains:
+		- Add 
+		- Substract
+		- Multiply
+		- Div
+
+Command Line:
+
+--------------------------------
+		Calculator App
+--------------------------------
+	1. Add
+	2. Substract
+	3. Multiply
+	4. Div
+	0. Exit
+Input your option: 1
+First Number: 2
+Second Number: 3
+Result: 2 + 3 = 5
