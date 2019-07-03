@@ -4,8 +4,6 @@ import (
     "fmt"   
 "github.com/labstack/echo"
 "net/http"
-"log"
-"encoding/json"
 "database/sql"
   _ "github.com/lib/pq"
 "strconv"
@@ -101,7 +99,6 @@ func (a *AuthorBusiness) Update(ID int, fullName string) (*Authors, error) {
     _, err := AuthorBusinessImpl.DB.Exec(sqlStatement, ID, fullName)
     if err != nil {
         return nil, errors.New("error exists")
-        log.Println("error exists")
     }
     t := time.Now()
     return &Authors{
@@ -149,14 +146,14 @@ func Create (c echo.Context) error{
     payload := struct {
         FullName string `json:"fullName"`
     }{}
-    if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-        log.Fatalln(err)
-        return
+    if err := c.Bind(&payload); err != nil {
+        return err
     }
+
     author, err := AuthorBusinessImpl.Create(payload.FullName)
     if err != nil {
         errors.New("error exists")
-        return c.String(http.StatusOK, err)
+        return c.String(http.StatusOK, err.Error())
     }
     return c.JSON(http.StatusOK, author)
 }
@@ -165,9 +162,9 @@ func Read (c echo.Context) error{
     strmsg, err := AuthorBusinessImpl.Read()
     if err != nil {
         errors.New("error exists")
-        return c.String(http.StatusOK, err)
+        return c.String(http.StatusOK, err.Error())
     }
-    return c.JSON(http.StatusOK, author)
+    return c.JSON(http.StatusOK, strmsg)
 }
 
 func ReadID (c echo.Context) error{
@@ -176,12 +173,7 @@ func ReadID (c echo.Context) error{
     author, err := AuthorBusinessImpl.ReadID(id)
     if err != nil {
         errors.New("error exists")
-        resp := struct {
-            Message string `json:"message:"`
-        }{
-            Message: err.Error(),
-        }
-        return c.String(http.StatusOK, author)
+        return c.String(http.StatusOK, err.Error())
     }
     return c.JSON(http.StatusOK, author)
 
@@ -194,9 +186,8 @@ func Update (c echo.Context) error{
         ID string `json:"id"`
         FullName string `json:"fullName"`
     }{}
-    if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-        log.Fatalln(err)
-        return
+    if err := c.Bind(&payload); err != nil {
+        return err
     }
     idtwo,_ := strconv.Atoi(payload.ID)
     if idtwo != id{
@@ -204,16 +195,16 @@ func Update (c echo.Context) error{
     }
     author, err := AuthorBusinessImpl.ReadID(id)
     if err != nil {
-        return c.String(http.StatusOK, err)
+        return c.String(http.StatusOK, err.Error())
     }
     if author.ID == 0 {
         err = errors.New("ID does not exist")
-        return c.String(http.StatusOK, err)
+        return c.String(http.StatusOK, err.Error())
     }
-    author, err := AuthorBusinessImpl.Update(id, payload.FullName)
+    author, err = AuthorBusinessImpl.Update(id, payload.FullName)
     if err != nil {
         errors.New("error exists")
-        return c.String(http.StatusOK, err)
+        return c.String(http.StatusOK, err.Error())
 
     }
     return c.JSON(http.StatusOK, author)
@@ -227,7 +218,7 @@ func Delete (c echo.Context) error{
     if err != nil {
         fmt.Println(err.Error())
         errors.New("error exists")
-        return c.String(http.StatusOK, err)
+        return c.String(http.StatusOK, err.Error())
     }
     return c.JSON(http.StatusOK, author)
 }

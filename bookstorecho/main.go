@@ -3,13 +3,11 @@ package main
 import (
     "fmt"   
 "github.com/labstack/echo"
-"net/http"
-"log"
 "database/sql"
 "errors"
   _ "github.com/lib/pq"
-    "bookstore/author"
-    "bookstore/books"
+    "bookstorecho/author"
+    "bookstorecho/books"
     
 )
 
@@ -54,7 +52,7 @@ func main (){
     author.SetDB(db)
     books.SetDB(db)
 
-    router := mux.NewRouter()
+    //router := mux.NewRouter()
 
     e.POST("/api/author/create", author.Create)
     e.GET("/api/author/read", author.Read)
@@ -68,8 +66,10 @@ func main (){
     e.PUT("/api/books/update/:identity", books.Update)
     e.DELETE("/api/v1/books/delete/:identity", books.Delete)
 
-    http.Handle("/", router)
-    fmt.Println("Connected to port 8080")
-    log.Fatal(http.ListenAndServe(":8080", router))
+    e.Logger.Fatal(e.Start(":8080"))
+
+    // http.Handle("/", router)
+    // fmt.Println("Connected to port 8080")
+    // log.Fatal(http.ListenAndServe(":8080", router))
 
 }

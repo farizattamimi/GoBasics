@@ -4,8 +4,6 @@ import (
     "fmt"   
 "github.com/labstack/echo"
 "net/http"
-"log"
-"encoding/json"
 "database/sql"
 _ "github.com/lib/pq"
 "strconv"
@@ -153,14 +151,13 @@ func Create (c echo.Context) error{
         Category string `json:"Category"`
         Author_id string `json:"Author_id"`
     }{}
-    if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-        log.Fatalln(err)
-        return
+    if err := c.Bind(&payload); err != nil {
+        return err
     }
     books, err := BooksBusinessImpl.Create(payload.Isbn, payload.Title, payload.Category, payload.Author_id)
     if err != nil {
         errors.New("error exists")
-        return c.String(http.StatusOK, err)
+        return c.String(http.StatusOK, err.Error())
     }
     return c.JSON(http.StatusOK, books)
 }
@@ -169,9 +166,9 @@ func Read (c echo.Context) error{
     strmsg, err := BooksBusinessImpl.Read()
     if err != nil {
         errors.New("error exists")
-        return c.String(http.StatusOK, err)
+        return c.String(http.StatusOK, err.Error())
     }
-    return c.JSON(http.StatusOK, books)
+    return c.JSON(http.StatusOK, strmsg)
 }
 
 func ReadID (c echo.Context) error{
@@ -181,7 +178,7 @@ func ReadID (c echo.Context) error{
     books, err := BooksBusinessImpl.ReadID(id)
     if err != nil {
         errors.New("error exists")
-        return c.String(http.StatusOK, err)
+        return c.String(http.StatusOK, err.Error())
     }
     return c.JSON(http.StatusOK, books)
 }
@@ -196,36 +193,35 @@ func Update (c echo.Context) error{
         Category  string `json:"category"`
         Author_id  int `json:"Author_id"`
     }{}
-    if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-        log.Fatalln(err)
-        return
+    if err := c.Bind(&payload); err != nil {
+        return err
     }
     if payload.ID != id{
         return c.String(http.StatusOK, "matching errors exist")
     }
     books, err := BooksBusinessImpl.ReadID(id)
     if err != nil {
-        return c.String(http.StatusOK, err)
+        return c.String(http.StatusOK, err.Error())
     }
     if books.ID == 0 {
         err = errors.New("ID does not exist")
-        return c.String(http.StatusOK, err)
+        return c.String(http.StatusOK, err.Error())
     }
     books, err = BooksBusinessImpl.Update(id, payload.Isbn, payload.Title, payload.Category, payload.Author_id)
     if err != nil {
         err = errors.New("object error exists")
-        return c.String(http.StatusOK, err)
+        return c.String(http.StatusOK, err.Error())
     }
     return c.JSON(http.StatusOK, books)
 }
 
-func Delete (c echo.Context){
+func Delete (c echo.Context)error{
     num := c.Param("identity")
     id,_ := strconv.Atoi(num)
     books, err := BooksBusinessImpl.Delete(id)
     if err != nil {
         errors.New("error exists")
-        return c.String(http.StatusOK, err)
+        return c.String(http.StatusOK, err.Error())
     }
     return c.JSON(http.StatusOK, books)
 }
